@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <script  src="http://cdn.bootcss.com/jquery/1.12.3/jquery.min.js"></script>
+    <script  src="layer/layer.js"></script>
+</head>
+
+<body>
+    <script>
+        layer.ready(function () {
+            layer.open({
+                type: 2,   //弹出层类型 0-4  主要用0.1.2
+                title: '欢迎你新伙伴',
+                maxmin: true,
+                //time:2000,  //延迟时间
+                shift:4,  //弹出层出现时的动画效果 分为0-6
+                area: ['800px', '500px'],
+                content: 'http://layer.layui.com/test/welcome.html',
+                end: function () {
+                    layer.tips('Hi', '#about', { tips: 1 })
+                }
+            });
+        });
+    </script>
+</body>
+
+</html>

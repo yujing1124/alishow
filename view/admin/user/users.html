@@ -1,0 +1,138 @@
+{{extend '../layouts/layout.html'}}
+
+{{block 'body'}}
+<div class="container-fluid">
+  <div class="page-title">
+    <h1>用户</h1>
+  </div>
+  <div class="row">
+
+    <div class="col-md-8">
+      <div class="page-action">
+        <!-- show when multiple checked -->
+        <a id="addLayer" class="btn btn-info btn-sm" href="javascript:;">添加新管理员</a>
+        <a id="delusers" class="btn btn-danger btn-sm" href="javascript:;">批量删除</a>
+      </div>
+      <table class="table table-striped table-bordered table-hover">
+        <thead>
+          <tr>
+            <th class="text-center" width="40"><input type="checkbox"></th>
+            <th class="text-center" width="80">头像</th>
+            <th>邮箱</th>
+            <th>昵称</th>
+            <th>状态</th>
+            <th class="text-center" width="100">操作</th>
+          </tr>
+        </thead>
+        <tbody>
+
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{{/block}}
+
+{{block 'js'}}
+<script src="/assets/vendors/art-template/template-web.js"></script>
+<script src="/assets/vendors/layer/layer.js"></script>
+
+<script type="text/html" id="userList">
+{#each data#}
+  <tr>
+    <td class="text-center">
+      <input type="checkbox" class="dels" value="{#$value.admin_id#}">
+    </td>
+    <td class="text-center"><img class="avatar" src="{#$value.admin_pic#}"></td>
+    <td>{#$value.admin_email#}</td>
+    <td>{#$value.admin_nickname#}</td>
+    <td>{#$value.admin_state#}</td>
+    <td class="text-center">
+      <a href="javascript:;"   data="{#$value.admin_id#}" class="btn edit btn-default btn-xs">编辑</a>
+      <a href="javascript:;" class="btn btn-danger btn-xs">删除</a>
+    </td>
+  </tr>
+{#/each#}
+</script>
+
+<script type="text/javascript">
+  //重定义页面模板引擎使用的定界符
+  template.defaults.rules[1].test = /{#([@#]?)[ \t]*(\/?)([\w\W]*?)[ \t]*#}/;
+
+  $.ajax({
+    url: '/admin/user/getUsers',
+    type: 'get',
+    cache: false,
+    dataType: 'json',
+    success: function (result) {
+      console.log(result);
+      //调用template函数
+      var str = template('userList', result);
+      $('tbody').html(str);
+    }
+  })
+
+  //添加新管理员按钮注册点击事件,弹出新的管理员表单
+  //用layer插件制作弹出层
+  $('#addLayer').click(function () {
+    layer.ready(function () {
+      layer.open({
+        type: 2,
+        title: '欢迎页',
+        maxmin: true,
+        area: ['800px', '500px'],
+        content: '/admin/user/adduser',
+      });
+    });
+  });
+
+  //给批量删除按钮注册点击事件
+  $('#delusers').click(function () {
+    //获取所有选中的复选框
+    var checkboxList = $('.dels:checked');
+    //定义一个空字符串存放接收删除的value值
+    var str = '';
+    //去除每个admin_id的值,拼接成一个字符串
+    //index:数组的下标
+    //item:checkbox的DOM对象
+    checkboxList.each(function (index, item) {
+      str += item.value + ',';
+    });
+    //截取掉最后一个','号,用slice
+    str = str.slice(0, str.length - 1);
+    console.log(str);
+
+    //发送ajax请求给后端,并把str字符串一起发送
+    $.ajax({
+      url: '/admin/user/delusers',
+      type: 'post',
+      data: { ids: str },
+      dataType: 'json',
+      success: function (result) {
+        console.log(result);
+        alert(result.message);
+        if (result.code == 200) {
+          checkboxList.each(function () {
+            $(this).parents('tr').remove();
+          })
+        }
+      }
+    })
+  });
+
+  //给每个编辑按钮注册点击事件
+  $('tbody').on('click', '.edit', function () {
+    var admin_id = $(this).attr('data');
+    console.log(admin_id);
+    //制作出弹出层
+    layer.open({
+      type: 2,
+      title: '编辑管理员页',
+      maxmin: true,
+      area: ['800px', '500px'],
+      content: '/admin/user/edituser?id='+admin_id,
+    });
+  })
+
+</script>
+{{/block}}
